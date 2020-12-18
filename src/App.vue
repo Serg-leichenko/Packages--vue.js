@@ -1,28 +1,117 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="wrap">
+      <div class="title">
+        <h1>List Packages</h1>
+      </div>
+      <div class="search-top">
+        <b-navbar toggleable="lg" type="dark" variant="info">
+        <b-navbar-nav class="m-auto">
+          <b-nav-form>
+            <b-form-input size="sm" class="mr-sm-2" type="text" v-model="searchValue" placeholder="Search" autocomplete="on"></b-form-input>
+          </b-nav-form>           
+        </b-navbar-nav>
+      </b-navbar>
+      </div>
+      <div class="list">
+        <div class="list__package type">
+          <ul>
+            <li v-for="(info, index) of filteredInform" :key="index">
+              <a href="#">{{ info.name }}</a>
+              <b-button variant="outline-primary btn" v-b-modal.my-modal>Detail</b-button>
+            </li>
+          </ul>          
+        </div>
+      </div>
+      <b-modal id="my-modal">
+        <div class="package-modal">
+          <div class="package-name">
+          <ul>
+            <li v-for="(info, index) of filteredInform" :key="index">
+              <p>Type: {{ info.type }}</p>
+            </li>
+          </ul>          
+        </div>
+        <div class="package-hits">
+          <ul>
+            <li v-for="(info, index) of filteredInform" :key="index">
+              <p>Hits: {{ info.hits }}</p>
+            </li>
+          </ul>          
+        </div>  
+        </div>      
+      </b-modal>
+      <Footer />     
+    </div>  
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Footer from '@/components/Footer'
+import axios from 'axios'
 export default {
-  name: 'App',
   components: {
-    HelloWorld
+    Footer
+  },
+  data() {
+    return {
+      inform: [],
+      searchValue: ''
+    }
+  },
+  computed: {
+    filteredInform: function(){
+        return this.inform.filter((info) => {
+            return info.name.toLowerCase().match(this.searchValue.toLowerCase());
+        });
+    }
+  },
+  mounted() {
+    axios
+      .get('https://data.jsdelivr.com/v1/stats/packages')
+      .then(response => this.inform = response.data);
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.wrap {
+  padding-top: 20px;
+}
+.title {
+text-align: center;
+}
+ul, li {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+.list {
+  background-color: #cccccc;
+  padding: 10px 0;
+}
+.list__package {  
+  width: 50%;  
+  margin: auto;
+}
+.list__package ul li {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #000;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+.list__package ul li a {
+  display: flex;
+  align-items: center;
+  color: #000;
+}
+.btn {
+  width: 150px;
+}
+.package-modal {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
