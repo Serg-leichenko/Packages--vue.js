@@ -16,7 +16,7 @@
       <div class="list">
         <div class="list__package type">
           <ul>
-            <li v-for="(info, index) of filteredInform" :key="index">
+            <li v-for="(info, index) of filteredInform.slice((page - 1) * perPage, page * perPage)" :key="index">
               <a href="#">{{ info.name }}</a>
               <b-button variant="outline-primary btn" v-b-modal.my-modal>Detail</b-button>
             </li>
@@ -41,6 +41,10 @@
         </div>  
         </div>      
       </b-modal>
+      <div class="btn-next-prev">
+        <b-button @click="next(-1)" :disabled="page <= 1">Prev</b-button>
+        <b-button @click="next(+1)" :disabled="page >= numPages">Next</b-button>
+      </div>
       <Footer />     
     </div>  
   </div>
@@ -55,8 +59,11 @@ export default {
   },
   data() {
     return {
-      inform: [],
-      searchValue: ''
+      inform: [].map((n, i) => i + 1),
+      searchValue: '',
+      page: 1,
+      perPage: 10,
+      list: 1
     }
   },
   computed: {
@@ -64,12 +71,21 @@ export default {
         return this.inform.filter((info) => {
             return info.name.toLowerCase().match(this.searchValue.toLowerCase());
         });
-    }
+    },
+
+    numPages() {
+      return Math.ceil(this.inform.length / this.perPage);
+    },
   },
   mounted() {
     axios
       .get('https://data.jsdelivr.com/v1/stats/packages')
       .then(response => this.inform = response.data);
+  },
+  methods: {
+    next(change) {
+      this.page = Math.max(1, Math.min(this.numPages, this.page + change));
+    },
   }
 }
 </script>
@@ -113,5 +129,12 @@ ul, li {
 .package-modal {
   display: flex;
   justify-content: space-between;
+}
+.btn-next-prev {
+  width: 30%;
+  display: flex;
+  justify-content: space-between;
+  margin: auto;
+  padding: 10px 0;
 }
 </style>
